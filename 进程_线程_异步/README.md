@@ -21,3 +21,30 @@
 - [扩展：协程](扩展：协程.md)
 - [扩展：yield_from例子](扩展：yield_from例子.md)
 
+
+
+## 多线程 Threading
+- 引用 `import threading`
+- 获取当前线程 `threading.current_thread()`
+- 获取当前线程的名字 `threading.current_thread().name`
+- 创建一个线程：`t = threading.Thread(target=loop, name='自定义名字')`，name参数可不写
+- 调用一个线程：`t.start()`
+- 线程同步：`t.join()`
+- 主线程名字是`MainThread` 子线程name默认thread-1...
+
+------
+
+- 调用锁 Lock() ：`lock = threading.Lock()`
+- 获取锁或者加锁：`lock.acquire()`
+- 释放锁或者解锁：`lock.release()`
+- 线程加锁后一定要解锁：`try...finally...`
+
+------
+
+- 由于GIL的原因，多线程无法利用多核进行并发，可采用多进程的方式
+
+## 多进程 
+
+
+
+## 异步
