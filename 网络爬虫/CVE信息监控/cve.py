@@ -3,9 +3,8 @@ from bs4 import BeautifulSoup
 from cveMysqlPress import cveMysqlPress
 from sendEmail import sendCveEmail
 
-
-
-def getCVES():# 获取最新到CVE列表
+# 获取最新到CVE列表,返回包含cve的url列表
+def getCVES():
     try:
         url = 'https://cassandra.cerias.purdue.edu/CVE_changes/today.html'
         res = requests.get(url)#, headers=headers, timeout=60)
@@ -20,24 +19,23 @@ def getCVES():# 获取最新到CVE列表
     except Exception as e:
         print(e)
 
-
-
-def getTodayCVES(content, startStr, endStr): # 获取文本中间内容
+# 获取文本中间内容
+def getTodayCVES(content, startStr, endStr):
     startIndex = content.index(startStr)
     if startIndex >= 0:
         startIndex += len(startStr)
         endIndex = content.index(endStr)
     return content[startIndex:endIndex]
 
+#将数据进行base64编码
 def inBase64(data):
     return str(base64.b64encode(data.encode('utf-8')),'utf-8')
 
+#将base64数据解码成字符串信息
 def base64Out(data):
     return str(base64.b64decode(data),'utf-8')
 
-import pysnooper
-
-# @pysnooper.snoop()
+#解析每个url的信息
 def getCVEDetail(url):
     r = requests.get(url)
     r.encoding = r.apparent_encoding
@@ -53,25 +51,39 @@ def getCVEDetail(url):
             'description':description,
             'dateEntryCreated':dateEntryCreated,
             'cveDetailUrl':cveDetailUrl}
-    # x=0
-    # for a in soup.find_all('a'):
-    #     print(a,x)
-    #     x+=1
 
-
-# url = 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2012-6652'
-# # getCVEDetail(url)
-# cm = cveMysqlPress()
-# cm.insert_data(getCVEDetail(url))
-
-if __name__ == '__main__':
+#全流程执行脚本
+def main():
     cm= cveMysqlPress() #实例化数据库脚本
-
-    ################不需要更新数据时注释本段代码######################
-    # cveList = getCVES() #获取cve列表
-    # for cveUrl in cveList:#更新cve数据
-    #     cm.insert_data(getCVEDetail(cveUrl))
-    #################不需要更新数据时注释本段代码######################
-    
+    cveList = getCVES() #获取cve列表
+    for cveUrl in cveList:#更新cve数据
+        cm.insert_data(getCVEDetail(cveUrl))
     cves_info = cm.query_data()#读取cve数据，默认为今天,其他时间 使用YYYY-MM-DD格式
     sendCveEmail(cves_info)#发送cve信息邮件
+
+#全流程执行脚本 + 显示进度条版
+def main2():
+    cm= cveMysqlPress() #实例化数据库脚本
+    cveList = getCVES() #获取cve列表
+    print('==========start instertting cves data============')
+    for cveUrl in cveList:#更新cve数据
+        percent = round(round((cveList.index(cveUrl)+1)/len(cveList),2)*100)
+        str_percent = f"cves information instertting:[{percent}%]"
+        print(str_percent,end='',flush=True)
+        cm.insert_data(getCVEDetail(cveUrl))
+        print('\b'*len(str_percent),end='')
+    print('\n==========complete cves data instertting============')
+    cves_info = cm.query_data()#读取cve数据，默认为今天,其他时间 使用YYYY-MM-DD格式
+    sendCveEmail(cves_info)#发送cve信息邮件
+
+#用于已经完成数据采集后 再次发送邮件
+def main_only_query_data():
+    cm= cveMysqlPress() #实例化数据库脚本
+    cves_info = cm.query_data()#读取cve数据，默认为今天,其他时间 使用YYYY-MM-DD格式
+    scm=sendCveEmail(cves_info)#实例化邮件发送脚本
+    scm.send()#发送cve信息邮件
+
+
+if __name__ == '__main__':
+    # main2()
+    main_only_query_data()

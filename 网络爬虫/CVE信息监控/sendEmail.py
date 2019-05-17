@@ -4,7 +4,7 @@ from email.header import Header
 import base64
 import pysnooper
 
-from config import HOST,USER,LICENSE_CODE,SENDER,RECEIVERS,SENDER_INFO,SUBJECT,CVE_TABLE
+from config import HOST,USER,LICENSE_CODE,SENDER,RECEIVERS,SENDER_INFO,SUBJECT,STYLE,creat_cve_table
 
 class sendCveEmail(object):
     def __init__(self, cves):
@@ -12,14 +12,14 @@ class sendCveEmail(object):
         self.server = smtplib.SMTP() 
         self.server.connect(HOST)
         self.server.login(USER,LICENSE_CODE)
-        self.send()
+        # self.send()
 
-    def pressData(self):
-        cve_info=""
+    def pressData(self):#组装cve信息的html表格
+        td=""
         for cve in self.cves:
-            cve_info += f"<tr><th>{cve[0]}</th><th align=\"left\">{self.outBase64(cve[1])}</th><th>{cve[2]}</th><th>{self.outBase64(cve[3])}</th></tr>"
-        # print(cve_info)
-        return CVE_TABLE.format(cve_info)
+            td += f"<tr><td style=\"{STYLE.get('td')}\">{cve[0]}</td><td style=\"{STYLE.get('td')}\" align=\"left\">{self.outBase64(cve[1])}</td><td style=\"{STYLE.get('td')}\">{cve[2]}</td><td style=\"{STYLE.get('td')}\"><a href=\"{self.outBase64(cve[3])}\" target=\"_blank\">点击前往</a></td></tr>"
+        cve_table= creat_cve_table(td)
+        return cve_table
 
     def outBase64(self,base64_string):
         return str(base64.b64decode(base64_string),'utf-8')
