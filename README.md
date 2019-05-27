@@ -3,6 +3,8 @@
 记录学习python的日常
 
 - [beautifulSoup库bs4](./bs4/README.md)
+- [leetcode算法编程](leetcode/README.md)
+- [python基本功能知识总结](python基本功能知识总结/README.md)
 - [进程、线程、异步](./进程_线程_异步/README.md)
   - [多线程](进程_线程_异步/多线程.md)
   - [异步](进程_线程_异步/异步.md)
